@@ -1,0 +1,10 @@
+[Unit]
+Description=pppd socket dor dcnet
+
+[Socket]
+ListenStream=7654
+Accept=yes
+
+[Install]
+WantedBy=sockets.target
+

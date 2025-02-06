@@ -1,0 +1,6 @@
+[Unit]
+Description=pppd server
+
+[Service]
+ExecStart=-/usr/sbin/pppd 172.20.0.1: notty
+StandardInput=socket

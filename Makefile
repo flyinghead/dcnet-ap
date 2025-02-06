@@ -1,5 +1,5 @@
 #
-# dependencies: ppp-dev libsqlite3-dev
+# dependencies: ppp ppp-dev sqlite3 libsqlite3-dev
 #
 INSTALL_DIR=/usr/local/lib/pppd/2.4.9/
 CC=gcc
@@ -20,5 +20,15 @@ clean:
 	rm -f *.o ppp-ipaddr.so
 
 createdb:
+	mkdir -p /usr/local/var
 	sqlite3 /usr/local/var/ppp-addr.db < createdb.sql
 
+createservice:
+	mkdir -p /usr/local/lib/systemd
+	cp pppd.socket pppd@.service /usr/local/lib/systemd
+	systemctl enable /usr/local/lib/systemd/pppd.socket
+	systemctl enable /usr/local/lib/systemd/pppd@.service
+	systemctl start pppd.socket
+
+archive:
+	tar cvzf ppp-plugin.tar.gz Makefile createdb.sql ppp-ipaddr.c
