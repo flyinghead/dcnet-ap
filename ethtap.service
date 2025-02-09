@@ -1,0 +1,14 @@
+[Unit]
+Description=DCNet BBA tap daemon
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+ExecStart=/usr/local/bin/ethtap /usr/local/etc/dnsmasq-ethtap.conf
+StandardOutput=append:/usr/local/var/ethtap.log
+
+[Install]
+WantedBy=multi-user.target

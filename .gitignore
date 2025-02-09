@@ -1,0 +1,3 @@
+*.o
+/ethtap
+/ppp-ipaddr.so
