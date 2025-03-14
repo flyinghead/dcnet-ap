@@ -22,6 +22,7 @@
 #include <cassert>
 
 constexpr int MAX_CONNECTIONS = 64;
+constexpr time_t READ_TIMEOUT = 35 * 60;
 
 int child_pipe = -1;
 std::string remoteEndpoint;
@@ -214,6 +215,7 @@ void handleConnection(int sock)
 	uint8_t outbuf[1600];
 	unsigned inbuflen = 0;
 	unsigned outbuflen = 0;
+	time_t last_sock_read = time(NULL);
 	for (;;)
 	{
 		fd_set readfds;
@@ -238,7 +240,14 @@ void handleConnection(int sock)
 			FD_SET(sock, &writefds);
 
 		int nfds = (sock > tap_fd ? sock : tap_fd) + 1;
-		if (select(nfds, &readfds, &writefds, nullptr, nullptr) == -1)
+		timeval tv;
+		tv.tv_sec = READ_TIMEOUT - (time(NULL) - last_sock_read);
+		if (tv.tv_sec <= 0) {
+			fprintf(stderr, "No data received for 35 min. Closing connection\n");
+			break;
+		}
+		tv.tv_usec = 0;
+		if (select(nfds, &readfds, &writefds, nullptr, &tv) == -1)
 		{
 			if (errno == EINTR)
 				continue;
@@ -292,28 +301,31 @@ void handleConnection(int sock)
 			if (ret > 0) {
 				inbuflen += ret;
 				FD_SET(tap_fd, &writefds);
+				last_sock_read = time(NULL);
 			}
 		}
 		if (FD_ISSET(tap_fd, &writefds))
 		{
 			uint16_t framelen = *(uint16_t *)&inbuf[0];
-			assert(inbuflen >= framelen + 2u);
-			//printf("In frame: %d\n", framelen);
-			ssize_t ret = write(tap_fd, inbuf + 2, framelen);
-			if (ret < 0) {
-				if (errno != EINTR && errno != EWOULDBLOCK) {
-					perror("write(tap)");
-					break;
-				}
-				ret = 0;
-			}
-			if (ret > 0)
+			if (inbuflen >= framelen + 2u)
 			{
-				if (ret != framelen)
-					fprintf(stderr, "WARNING: tap write truncated %d -> %zd\n", framelen, ret);
-				inbuflen -= framelen + 2;
-				if (inbuflen > 0)
-					memmove(inbuf, inbuf + framelen + 2, (size_t)inbuflen);
+				//printf("In frame: %d\n", framelen);
+				ssize_t ret = write(tap_fd, inbuf + 2, framelen);
+				if (ret < 0) {
+					if (errno != EINTR && errno != EWOULDBLOCK) {
+						perror("write(tap)");
+						break;
+					}
+					ret = 0;
+				}
+				if (ret > 0)
+				{
+					if (ret != framelen)
+						fprintf(stderr, "WARNING: tap write truncated %d -> %zd\n", framelen, ret);
+					inbuflen -= framelen + 2;
+					if (inbuflen > 0)
+						memmove(inbuf, inbuf + framelen + 2, (size_t)inbuflen);
+				}
 			}
 		}
 		if (FD_ISSET(sock, &writefds))

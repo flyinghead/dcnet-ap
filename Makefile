@@ -43,4 +43,5 @@ createservice:
 	systemctl start ethtap.service
 
 archive:
-	tar cvzf ppp-plugin.tar.gz Makefile createdb.sql ppp-ipaddr.c
+	tar cvzf ppp-plugin.tar.gz Makefile createdb.sql ppp-ipaddr.c ethtap.cpp \
+		pppd.socket pppd@.service ethtap.service dnsmasq-ethtap.conf
