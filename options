@@ -348,6 +348,7 @@ noipx
 noipv6
 logfile /var/log/pppd.log
 plugin /usr/local/lib/pppd/2.4.9/ppp-ipaddr.so
+startip 172.20.0.10
 
 # from dreampi
 ktune

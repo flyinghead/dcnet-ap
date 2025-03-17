@@ -27,6 +27,7 @@ constexpr time_t READ_TIMEOUT = 35 * 60;
 int child_pipe = -1;
 std::string remoteEndpoint;
 const char *dnsmasq_conf = "dnsmasq.conf";
+const char *start_ip = "172.20.1.0";
 
 bool setNonBlocking(int fd)
 {
@@ -164,7 +165,11 @@ void handleConnection(int sock)
 		fprintf(stderr, "Maximum BBA connections reached: %d\n", ifnum);
 		exit(1);
 	}
-	std::string ipaddr = "172.20.1." + std::to_string(ifnum * 2);
+	in_addr inaddr;
+	inet_aton(start_ip, &inaddr);
+	inaddr.s_addr = htonl(ntohl(inaddr.s_addr) + ifnum * 2);
+
+	std::string ipaddr = inet_ntoa(inaddr);
 	printf("%s: interface %s - IP address %s\n", remoteEndpoint.c_str(), ifname.c_str(), ipaddr.c_str());
 	sockaddr_in *ifaddr = (sockaddr_in *)&ifr.ifr_addr;
 	ifaddr->sin_family = AF_INET;
@@ -370,8 +375,18 @@ int main(int argc, char *argv[])
 	setvbuf(stdout, nullptr, _IOLBF, BUFSIZ);
 	signal(SIGCHLD, SIG_IGN);
 
-	if (argc > 1)
-		dnsmasq_conf = argv[1];
+	int opt;
+	while ((opt = getopt(argc, argv, "d:i:")) != -1) {
+		switch (opt) {
+		case 'd':
+			dnsmasq_conf = optarg;
+			break;
+		case 'i':
+			start_ip = optarg;
+			break;
+		}
+	}
+
 	int ssock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	int option = 1;
 	setsockopt(ssock, SOL_SOCKET, SO_REUSEADDR, (const char *)&option, sizeof(option));

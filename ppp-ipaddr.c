@@ -26,6 +26,13 @@
 #undef bool
 
 char pppd_version[] = VERSION;
+static const char *start_ip;
+static option_t options[] = {
+	{ "startip", o_string, &start_ip, "Starting IP address assigned to ppp0" },
+	{ NULL }
+};
+static char peerAddr[32] = "?";
+static char *peerName = "?";
 
 static const char *getDate()
 {
@@ -35,9 +42,6 @@ static const char *getDate()
 	nowstr[strlen(nowstr) - 1] = '\0';
 	return nowstr;
 }
-
-static char peerAddr[32] = "?";
-static char *peerName = "?";
 
 static void assignIp(u_int32_t *addrp)
 {
@@ -63,12 +67,22 @@ static void assignIp(u_int32_t *addrp)
 		return;
 	}
 	int i = atoi(&ifname[3]);
-	char ipstr[INET_ADDRSTRLEN];
-	sprintf(ipstr, "172.20.0.%d", (uint8_t)(i + 10));
-
+	if (i < 0 || i > 255) {
+		error("[%s] %s user %s - too many connections: %s",
+				getDate(), peerAddr, peerName, ifname);
+		*addrp = 0;
+		return;
+	}
+	if (start_ip == NULL) {
+		start_ip = "172.20.0.10";
+		info("Option '%s' not set. Using default %s", options[0].name, start_ip);
+	}
 	struct in_addr inaddr;
-	inet_aton(ipstr, &inaddr);
+	inet_aton(start_ip, &inaddr);
+	inaddr.s_addr = htonl(ntohl(inaddr.s_addr) + i);
 	*addrp = inaddr.s_addr;
+
+	char *ipstr = inet_ntoa(inaddr);
 	info("[%s] %s: Connection from %s user %s assigned IP %s",
 			getDate(), ifname, peerAddr, peerName, ipstr);
 }
@@ -83,6 +97,7 @@ void
 plugin_init(void)
 {
 	info("DCNet IP address plugin");
+	add_options(options);
 	ip_choose_hook = &assignIp;
 	add_notifier(&exitnotify, pppExit, NULL);
 }

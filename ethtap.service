@@ -7,7 +7,7 @@ StartLimitIntervalSec=0
 Type=simple
 Restart=always
 RestartSec=1
-ExecStart=/usr/local/bin/ethtap /usr/local/etc/dnsmasq-ethtap.conf
+ExecStart=/usr/local/bin/ethtap -i 172.20.1.0 -d /usr/local/etc/dnsmasq-ethtap.conf
 StandardOutput=append:/usr/local/var/ethtap.log
 
 [Install]
