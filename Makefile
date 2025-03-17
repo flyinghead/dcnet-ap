@@ -1,5 +1,5 @@
 #
-# dependencies: ppp ppp-dev sqlite3 libsqlite3-dev
+# dependencies: ppp ppp-dev
 #
 INSTALL_DIR=/usr/local/
 CFLAGS=-O3 -fPIC -Wall
@@ -9,7 +9,7 @@ DEPS=
 all: ppp-ipaddr.so ethtap
 
 ppp-ipaddr.so: ppp-ipaddr.o
-	$(CC) -shared -o $@ $< -lsqlite3
+	$(CC) -shared -o $@ $<
 
 ethtap: ethtap.o
 	$(CXX) $(CXXFLAGS) -o $@ $<
@@ -29,10 +29,6 @@ install: all
 clean:
 	rm -f *.o ppp-ipaddr.so ethtap
 
-createdb:
-	mkdir -p /usr/local/var
-	sqlite3 /usr/local/var/ppp-addr.db < createdb.sql
-
 createservice:
 	mkdir -p /usr/local/lib/systemd
 	cp pppd.socket pppd@.service ethtap.service /usr/local/lib/systemd
@@ -43,5 +39,5 @@ createservice:
 	systemctl start ethtap.service
 
 archive:
-	tar cvzf ppp-plugin.tar.gz Makefile createdb.sql ppp-ipaddr.c ethtap.cpp \
+	tar cvzf ppp-plugin.tar.gz Makefile ppp-ipaddr.c ethtap.cpp \
 		pppd.socket pppd@.service ethtap.service dnsmasq-ethtap.conf
