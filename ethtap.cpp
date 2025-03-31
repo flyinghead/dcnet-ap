@@ -16,6 +16,7 @@
 #include <arpa/inet.h>
 #include <linux/if_tun.h>
 #include <pwd.h>
+#include <grp.h>
 #include <signal.h>
 #include <sys/wait.h>
 #include <string>
@@ -197,18 +198,16 @@ void handleConnection(int sock)
 	startDnsmasq(ifname, ipaddr);
 
 	// Leave superuser mode
-	uid_t uid, gid;
-	passwd *user = getpwnam("nobody");
-	if (user == nullptr) {
-		uid = 65534;
-		gid = 65434;
-	}
-	else {
-		uid = user->pw_uid;
-		gid = user->pw_gid;
-	}
+	uid_t gid = 65534;
+	group *grp = getgrnam("nogroup");
+	if (grp != nullptr)
+		gid = grp->gr_gid;
 	if (setgid(gid))
 		error(-1, errno, "setgid");
+	uid_t uid = 65534;
+	passwd *user = getpwnam("nobody");
+	if (user != nullptr)
+		uid = user->pw_uid;
 	if (setuid(uid))
 		error(-1, errno, "setuid");
 	atexit(logend);

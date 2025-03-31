@@ -6,6 +6,8 @@
 #
 # To quickly see what options are active in this file, use this command:
 #   egrep -v '#|^ *$' /etc/ppp/options
+172.20.0.1:
+notty
 
 # Specify which DNS Servers the incoming Win95 or WinNT Connection should use
 # Two Servers can be remotely configured
@@ -163,7 +165,7 @@ silent
 # setting up /etc/syslog.conf appropriately (see syslog.conf(5)).  (If
 # pppd is compiled with extra debugging enabled, it will log messages
 # using facility local2 instead of daemon).
-debug
+#debug
 
 # Append the domain name <d> to the local host name for authentication
 # purposes.  For example, if gethostname() returns the name porsche,
@@ -348,11 +350,10 @@ noipx
 noipv6
 logfile /var/log/pppd.log
 plugin /usr/local/lib/pppd/2.4.9/ppp-ipaddr.so
-startip 172.20.0.10
 
 # from dreampi
 ktune
 noccp
 ms-dns 172.20.0.1
-
+startip 172.20.0.10
 # ---<End of File>---

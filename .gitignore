@@ -1,3 +1,5 @@
 *.o
 /ethtap
 /ppp-ipaddr.so
+/dcnetbba
+/discoping

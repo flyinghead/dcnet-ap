@@ -1,0 +1,16 @@
+[Unit]
+Description=DCNet discoping service
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+User=nobody
+Group=nogroup
+ExecStart=/usr/local/sbin/discoping
+StandardOutput=append:/var/log/dcnet/discoping.log
+
+[Install]
+WantedBy=multi-user.target

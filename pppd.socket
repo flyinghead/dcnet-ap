@@ -1,5 +1,5 @@
 [Unit]
-Description=pppd socket dor dcnet
+Description=pppd socket for DCNet
 
 [Socket]
 ListenStream=7654

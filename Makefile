@@ -1,17 +1,27 @@
 #
 # dependencies: ppp ppp-dev
 #
-INSTALL_DIR=/usr/local/
+prefix = /usr/local
+exec_prefix = $(prefix)
+sbindir = $(exec_prefix)/sbin
+libdir = $(exec_prefix)/lib
+
 CFLAGS=-O3 -fPIC -Wall
 CXXFLAGS=-O3 -Wall
 DEPS=
 
-all: ppp-ipaddr.so ethtap
+all: ppp-ipaddr.so ethtap discoping
 
 ppp-ipaddr.so: ppp-ipaddr.o
 	$(CC) -shared -o $@ $<
 
 ethtap: ethtap.o
+	$(CXX) $(CXXFLAGS) -o $@ $<
+
+discoping: discoping.o
+	$(CC) $(CFLAGS) -o $@ $<
+
+dcnetbba: dcnetbba.o
 	$(CXX) $(CXXFLAGS) -o $@ $<
 
 %.o: %.c $(DEPS)
@@ -21,22 +31,26 @@ ethtap: ethtap.o
 	$(CXX) -c -o $@ $< $(CXXFLAGS)
 
 install: all
-	mkdir -p $(INSTALL_DIR)/lib/pppd/2.4.9
-	install -m 0644 ppp-ipaddr.so $(INSTALL_DIR)/lib/pppd/2.4.9
-	mkdir -p $(INSTALL_DIR)/bin
-	install ethtap $(INSTALL_DIR)/bin
+	PPP_VER=`ls /usr/lib/pppd/ | head -1` ; \
+	mkdir -p $(DESTDIR)/usr/lib/pppd/$$PPP_VER && \
+	install -m 0644 ppp-ipaddr.so $(DESTDIR)/usr/lib/pppd/$$PPP_VER
+	mkdir -p $(DESTDIR)$(sbindir)
+	install ethtap $(DESTDIR)$(sbindir)
+	install discoping $(DESTDIR)$(sbindir)
+	mkdir -p $(DESTDIR)/var/log/dcnet
 
 clean:
-	rm -f *.o ppp-ipaddr.so ethtap
+	rm -f *.o ppp-ipaddr.so ethtap discoping dcnetbba
 
 createservice:
-	mkdir -p /usr/local/lib/systemd
-	cp pppd.socket pppd@.service ethtap.service /usr/local/lib/systemd
-	systemctl enable /usr/local/lib/systemd/pppd.socket
-	systemctl enable /usr/local/lib/systemd/pppd@.service
-	systemctl start pppd.socket
-	systemctl enable /usr/local/lib/systemd/ethtap.service
-	systemctl start ethtap.service
+	cp pppd.socket pppd@.service ethtap.service discoping.service /usr/lib/systemd/system
+	sed -i -e "s:/usr/local/sbin/:$(sbindir)/:g" /usr/lib/systemd/system/discoping.service
+	sed -i -e "s:/usr/local/sbin/:$(sbindir)/:g" /usr/lib/systemd/system/ethtap.service
+	systemctl enable pppd.socket
+	systemctl enable ethtap.service
+	systemctl restart ethtap.service
+	systemctl enable discoping.service
+	systemctl restart discoping.service
 
 archive:
 	tar cvzf ppp-plugin.tar.gz Makefile ppp-ipaddr.c ethtap.cpp \
