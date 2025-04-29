@@ -37,21 +37,27 @@ install: all
 	mkdir -p $(DESTDIR)$(sbindir)
 	install ethtap $(DESTDIR)$(sbindir)
 	install discoping $(DESTDIR)$(sbindir)
+	install iptables-dcnet.sh $(DESTDIR)$(sbindir)
 	mkdir -p $(DESTDIR)/var/log/dcnet
 
 clean:
 	rm -f *.o ppp-ipaddr.so ethtap discoping dcnetbba
 
 createservice:
-	cp pppd.socket pppd@.service ethtap.service discoping.service /usr/lib/systemd/system
+	cp pppd.socket pppd@.service ethtap.service discoping.service iptables-dcnet.service /usr/lib/systemd/system/
 	sed -i -e "s:/usr/local/sbin/:$(sbindir)/:g" /usr/lib/systemd/system/discoping.service
 	sed -i -e "s:/usr/local/sbin/:$(sbindir)/:g" /usr/lib/systemd/system/ethtap.service
+	sed -i -e "s:/usr/local/sbin/:$(sbindir)/:g" /usr/lib/systemd/system/iptables-dcnet.service
 	systemctl enable pppd.socket
+	systemctl restart pppd.socket
 	systemctl enable ethtap.service
 	systemctl restart ethtap.service
 	systemctl enable discoping.service
 	systemctl restart discoping.service
+	systemctl enable iptables-dcnet.service
+	systemctl restart iptables-dcnet.service
 
 archive:
-	tar cvzf ppp-plugin.tar.gz Makefile ppp-ipaddr.c ethtap.cpp \
-		pppd.socket pppd@.service ethtap.service dnsmasq-ethtap.conf
+	tar cvzf dcnet-ap.tar.gz Makefile ppp-ipaddr.c ethtap.cpp discoping.c dcnetbba.cpp \
+		pppd.socket pppd@.service ethtap.service dnsmasq-ethtap.conf options.dcnet discoping.service \
+		accesspoints iptables-dcnet.service iptables-dcnet.sh

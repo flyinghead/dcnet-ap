@@ -1,0 +1,61 @@
+#!/bin/sh
+#
+# DNAT/masquerade rules for dcnet traffic
+#
+set -e
+
+ETH_IF=$2
+if [ "x"$ETH_IF = "x" ]; then
+	#ETH_IF=`ip addr | egrep '^[0-9]+:' | cut -d " " -f 2 | egrep '^en' | head -1 | sed -e 's/://g'`
+	ETH_IF=`ip route show default | cut -d " " -f 5`
+	if [ "x"$ETH_IF = "x" ]; then
+		echo Cannot determine default route interface name. Specify the interface name as second argument.
+		exit 1
+	fi
+fi
+echo Default route interface is $ETH_IF
+
+if [ "x"$1 = "xstop" ] || [ "x"$1 = "xrestart" ]; then
+	set +e
+	iptables -t nat -D PREROUTING -i ppp+ -j DCNET_PRERT 2>/dev/null
+	iptables -t nat -D PREROUTING -i tap+ -j DCNET_PRERT 2>/dev/null
+	iptables -t nat -F DCNET_PRERT 2>/dev/null
+	iptables -t nat -X DCNET_PRERT 2>/dev/null
+	iptables -t nat -D POSTROUTING -s 172.20.0.0/16 -o $ETH_IF -j MASQUERADE 2>/dev/null
+
+	if [ "x"$1 = "xstop" ]; then
+		exit 0
+	fi
+fi
+
+dcnet=`getent hosts dcnet.flyca.st | awk '{ print $1 }'`
+dcnet_eu=`getent hosts dcnet-eu.flyca.st | awk '{ print $1 }'`
+
+if ! iptables -t nat -F DCNET_PRERT 2>/dev/null; then
+	# create chain and jump rules
+	iptables -t nat -N DCNET_PRERT
+	iptables -t nat -A PREROUTING -i ppp+ -j DCNET_PRERT
+	iptables -t nat -A PREROUTING -i tap+ -j DCNET_PRERT
+fi
+# Internet Game Pack
+iptables -t nat -A DCNET_PRERT -d 204.210.43.239/32 -p tcp -j DNAT --to-destination 172.20.0.1
+# Daytona USA (JP), Golf Shiyou Yo 2
+iptables -t nat -A DCNET_PRERT -d 203.179.41.127/32 -p tcp -j DNAT --to-destination 172.20.0.1
+# Sega Tetris
+iptables -t nat -A DCNET_PRERT -d 203.179.41.98/32 -p tcp -j DNAT --to-destination 172.20.0.1
+# Aero Dancing
+iptables -t nat -A DCNET_PRERT -d 203.179.41.170/32 -p tcp -j DNAT --to-destination 172.20.0.1
+# Hundred Swords
+iptables -t nat -A DCNET_PRERT -d 203.179.41.126/32 -p tcp -j DNAT --to-destination 172.20.0.1
+# Toy Racer (BBA)
+iptables -t nat -A DCNET_PRERT -d 24.233.108.248/32 -j DNAT --to-destination 172.20.0.1
+# redirect dcnet.flyca.st external IP to internal for dcnet users
+iptables -t nat -A DCNET_PRERT -d ${dcnet}/32 -j DNAT --to-destination 172.20.0.1
+# redirect dcnet-eu.flyca.st external IP to internal for dcnet users
+iptables -t nat -A DCNET_PRERT -d ${dcnet_eu}/32 -j DNAT --to-destination 172.20.2.1
+# shuouma server redirection for patched versions of
+# IWANGO games (9500), DeeDee planet (9100), IGP/visual concepts (11000, 12301, 15303)
+iptables -t nat -A DCNET_PRERT -d 146.185.135.179 -p tcp --match multiport --dports 9500,9100,11000,12301,15303 -j DNAT --to-destination 172.20.0.1
+
+iptables -t nat -D POSTROUTING -s 172.20.0.0/16 -o $ETH_IF -j MASQUERADE 2>/dev/null || true
+iptables -t nat -A POSTROUTING -s 172.20.0.0/16 -o $ETH_IF -j MASQUERADE

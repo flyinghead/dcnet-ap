@@ -1,0 +1,13 @@
+[Unit]
+Description=DCNet iptables rules
+After=network.target nss-lookup.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/iptables-dcnet.sh start
+ExecReload=/usr/local/sbin/iptables-dcnet.sh restart
+ExecStop=/usr/local/sbin/iptables-dcnet.sh stop
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
