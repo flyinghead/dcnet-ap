@@ -16,7 +16,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          submodules: 'true'
+          fetch-depth: 0
+          fetch-tags: true
 
       - run: sudo apt-get update
       - run: sudo apt-get install build-essential debhelper git-buildpackage
