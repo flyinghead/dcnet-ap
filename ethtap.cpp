@@ -35,6 +35,7 @@
 #include <sys/wait.h>
 #include <string>
 #include <cassert>
+#include <ctime>
 
 constexpr int MAX_CONNECTIONS = 64;
 constexpr time_t READ_TIMEOUT = 35 * 60;

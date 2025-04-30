@@ -82,8 +82,7 @@ static const char *getRemoteIp()
 static void assignIp(u_int32_t *addrp)
 {
 	// peer user name
-	if (peer_authname != NULL)
-		peerName = peer_authname;
+	peerName = peer_authname;
 
 	if (strncmp(ifname, "ppp", 3) != 0) {
 		error("[%s] %s user %s - ifname invalid: %s",
