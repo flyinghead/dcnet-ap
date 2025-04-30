@@ -1,0 +1,45 @@
+#!/usr/bin/make -f
+# See debhelper(7) (uncomment to enable)
+# output every command that modifies files on the build system.
+#export DH_VERBOSE = 1
+
+
+# see FEATURE AREAS in dpkg-buildflags(1)
+#export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+
+# see ENVIRONMENT in dpkg-buildflags(1)
+# package maintainers to append CFLAGS
+#export DEB_CFLAGS_MAINT_APPEND  = -Wall -pedantic
+# package maintainers to append LDFLAGS
+#export DEB_LDFLAGS_MAINT_APPEND = -Wl,--as-needed
+
+
+%:
+	dh $@
+
+# dh_make generated override targets
+# This is example for Cmake (See https://bugs.debian.org/641051 )
+#override_dh_auto_configure:
+#	dh_auto_configure -- #	-DCMAKE_LIBRARY_PATH=$(DEB_HOST_MULTIARCH)
+
+override_dh_auto_install:
+	$(MAKE) DESTDIR=$$(pwd)/debian/dcnet-ap prefix=/usr install
+	mkdir -p debian/dcnet-ap/etc/ppp
+	cp options.dcnet debian/dcnet-ap/etc/ppp/
+	sed -i -e "s:/usr/local/lib/:/usr/lib/:g" debian/dcnet-ap/etc/ppp/options.dcnet
+	mkdir -p debian/dcnet-ap/etc/dcnet
+	cp accesspoints dnsmasq-ethtap.conf debian/dcnet-ap/etc/dcnet/
+	mkdir -p debian/dcnet-ap/usr/lib/systemd/system/
+	cp pppd.socket pppd@.service ethtap.service discoping.service iptables-dcnet.service debian/dcnet-ap/usr/lib/systemd/system/
+	sed -i -e "s:/usr/local/sbin/:/usr/sbin/:g" \
+		-e "s:/usr/local/etc/:/etc/:g" debian/dcnet-ap/usr/lib/systemd/system/ethtap.service
+	sed -i -e "s:/usr/local/sbin/:/usr/sbin/:g" debian/dcnet-ap/usr/lib/systemd/system/discoping.service
+	sed -i -e "s:/usr/local/sbin/:/usr/sbin/:g" debian/dcnet-ap/usr/lib/systemd/system/iptables-dcnet.service
+
+
+# to test auto deployment of systemd unit files
+#dh_installsystemd
+#dh_installsystemd --name=pppd@
+#dh_installsystemd --name=ethtap
+#dh_installsystemd --name=discoping
+
