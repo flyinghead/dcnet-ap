@@ -30,6 +30,7 @@ case "$1" in
 	sed -i -e "s/172\\.20\\.0\\.1:/$AP_DCNET_ADDR:/g" \
 		-e "s/172\\.20\\.0\\.10/$PPP_START_ADDR/g" /etc/ppp/options.dcnet
 	sed -i -e "s/172\\.20\\.1\\.0/$TAP_START_ADDR/g" /usr/lib/systemd/system/ethtap.service
+	mkdir -p /var/log/dcnet
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)
