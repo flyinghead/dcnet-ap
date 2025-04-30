@@ -31,7 +31,7 @@ dcnetbba: dcnetbba.o
 	$(CXX) -c -o $@ $< $(CXXFLAGS)
 
 install: all
-	PPP_VER=`ls /usr/lib/pppd/ | head -1` ; \
+	PPP_VER=2.4.9 ; \
 	mkdir -p $(DESTDIR)/usr/lib/pppd/$$PPP_VER && \
 	install -m 0644 ppp-ipaddr.so $(DESTDIR)/usr/lib/pppd/$$PPP_VER
 	mkdir -p $(DESTDIR)$(sbindir)
