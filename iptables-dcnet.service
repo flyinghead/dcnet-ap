@@ -4,9 +4,9 @@ After=network.target nss-lookup.target
 
 [Service]
 Type=oneshot
-ExecStart=/usr/local/sbin/iptables-dcnet.sh start
-ExecReload=/usr/local/sbin/iptables-dcnet.sh restart
-ExecStop=/usr/local/sbin/iptables-dcnet.sh stop
+ExecStart=/usr/local/sbin/iptables-dcnet start
+ExecReload=/usr/local/sbin/iptables-dcnet restart
+ExecStop=/usr/local/sbin/iptables-dcnet stop
 RemainAfterExit=yes
 
 [Install]

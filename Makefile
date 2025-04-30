@@ -37,7 +37,7 @@ install: all
 	mkdir -p $(DESTDIR)$(sbindir)
 	install ethtap $(DESTDIR)$(sbindir)
 	install discoping $(DESTDIR)$(sbindir)
-	install iptables-dcnet.sh $(DESTDIR)$(sbindir)
+	install iptables-dcnet $(DESTDIR)$(sbindir)
 	mkdir -p $(DESTDIR)/var/log/dcnet
 
 clean:
@@ -60,4 +60,4 @@ createservice:
 archive:
 	tar cvzf dcnet-ap.tar.gz Makefile ppp-ipaddr.c ethtap.cpp discoping.c dcnetbba.cpp \
 		pppd.socket pppd@.service ethtap.service dnsmasq-ethtap.conf options.dcnet discoping.service \
-		accesspoints iptables-dcnet.service iptables-dcnet.sh
+		accesspoints iptables-dcnet.service iptables-dcnet

@@ -165,6 +165,8 @@ void disco(struct sockaddr_in *addr, const uint8_t *data, size_t len)
 
 int main(int argc, char *argv[])
 {
+	setvbuf(stdout, NULL, _IOLBF, BUFSIZ);
+
 	if (argc > 3) {
 		fprintf(stderr, "usage: %s [<port> [<access points file>] ]\n", argv[0]);
 		fprintf(stderr, "Default port: %d. Default access points file: %s\n", port, accessPointsFile);
