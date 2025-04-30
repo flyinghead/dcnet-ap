@@ -1,0 +1,28 @@
+name: Build Debian Package
+
+on:
+  push:
+    branches: [ debian/latest ]
+  pull_request:
+    branches: [ debian/latest ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: 'true'
+
+      - run: sudo apt-get update
+      - run: sudo apt-get install build-essential debhelper git-buildpackage
+      - run: gbp buildpackage -us -uc -nc
+      - run: mv ../*.deb .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dcnet-ap-debian
+          path: "*.deb"
