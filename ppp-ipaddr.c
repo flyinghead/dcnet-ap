@@ -90,7 +90,7 @@ static void assignIp(u_int32_t *addrp)
 		*addrp = 0;
 		return;
 	}
-	int i = atoi(&ifname[3]);
+	unsigned i = (unsigned)atoi(&ifname[3]);
 	if (i < 0 || i > 255) {
 		error("[%s] %s user %s - too many connections: %s",
 				getDate(), getRemoteIp(), peerName, ifname);
