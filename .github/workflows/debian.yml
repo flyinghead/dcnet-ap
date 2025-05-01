@@ -24,3 +24,6 @@ jobs:
         with:
           name: dcnet-ap-debian
           path: "*.deb"
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: *.deb
