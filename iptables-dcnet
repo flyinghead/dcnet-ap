@@ -6,7 +6,6 @@ set -e
 
 ETH_IF=$2
 if [ "x"$ETH_IF = "x" ]; then
-	#ETH_IF=`ip addr | egrep '^[0-9]+:' | cut -d " " -f 2 | egrep '^en' | head -1 | sed -e 's/://g'`
 	ETH_IF=`ip route show default | cut -d " " -f 5`
 	if [ "x"$ETH_IF = "x" ]; then
 		echo Cannot determine default route interface name. Specify the interface name as second argument.

@@ -6,8 +6,8 @@ exec_prefix = $(prefix)
 sbindir = $(exec_prefix)/sbin
 libdir = $(exec_prefix)/lib
 
-CFLAGS=-O3 -fPIC -Wall
-CXXFLAGS=-O3 -Wall
+CFLAGS=-O3 -g -fPIC -Wall -Wconversion
+CXXFLAGS=-O3 -g -Wall
 DEPS=
 
 all: ppp-ipaddr.so ethtap discoping
