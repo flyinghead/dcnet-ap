@@ -34,6 +34,7 @@ if [ -d /run/systemd/system ] && [ "$1" = remove ]; then
         deb-systemd-invoke stop 'ethtap.service' >/dev/null || true
         deb-systemd-invoke stop 'discoping.service' >/dev/null || true
         deb-systemd-invoke stop 'pppd.socket' >/dev/null || true
+        deb-systemd-invoke stop 'psmash-pppd.socket' >/dev/null || true
         deb-systemd-invoke stop 'iptables-dcnet.service' >/dev/null || true
 fi
 

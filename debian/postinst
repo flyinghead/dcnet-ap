@@ -29,6 +29,8 @@ case "$1" in
     configure)
 	sed -i -e "s/172\\.20\\.0\\.1:/$AP_DCNET_ADDR:/g" \
 		-e "s/172\\.20\\.0\\.10/$PPP_START_ADDR/g" /etc/ppp/options.dcnet
+	sed -i -e "s/172\\.20\\.0\\.1:/$AP_DCNET_ADDR:/g" \
+		-e "s/172\\.20\\.0\\.10/$PPP_START_ADDR/g" /etc/ppp/options.psmash
 	sed -i -e "s/172\\.20\\.1\\.0/$TAP_START_ADDR/g" /usr/lib/systemd/system/ethtap.service
 	mkdir -p /var/log/dcnet
     ;;
@@ -69,6 +71,11 @@ if [ "$1" = "configure" ] || [ "$1" = "abort-upgrade" ] || [ "$1" = "abort-decon
         else
                 deb-systemd-helper update-state 'pppd.socket' >/dev/null || true
         fi
+        if deb-systemd-helper --quiet was-enabled 'psmash-pppd.socket'; then
+                deb-systemd-helper enable 'psmash-pppd.socket' >/dev/null || true
+        else
+                deb-systemd-helper update-state 'psmash-pppd.socket' >/dev/null || true
+        fi
         if deb-systemd-helper --quiet was-enabled 'iptables-dcnet.service'; then
                 deb-systemd-helper enable 'iptables-dcnet.service' >/dev/null || true
         else
@@ -85,6 +92,7 @@ if [ "$1" = "configure" ] || [ "$1" = "abort-upgrade" ] || [ "$1" = "abort-decon
                 deb-systemd-invoke $_dh_action 'ethtap.service' >/dev/null || true
                 deb-systemd-invoke $_dh_action 'discoping.service' >/dev/null || true
                 deb-systemd-invoke $_dh_action 'pppd.socket' >/dev/null || true
+                deb-systemd-invoke $_dh_action 'psmash-pppd.socket' >/dev/null || true
                 deb-systemd-invoke $_dh_action 'iptables-dcnet.service' >/dev/null || true
         fi
 fi

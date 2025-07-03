@@ -25,12 +25,14 @@
 override_dh_auto_install:
 	$(MAKE) DESTDIR=$$(pwd)/debian/dcnet-ap prefix=/usr install
 	mkdir -p debian/dcnet-ap/etc/ppp
-	cp options.dcnet debian/dcnet-ap/etc/ppp/
+	cp options.dcnet options.psmash debian/dcnet-ap/etc/ppp/
 	sed -i -e "s:/usr/local/lib/:/usr/lib/:g" debian/dcnet-ap/etc/ppp/options.dcnet
+	sed -i -e "s:/usr/local/lib/:/usr/lib/:g" debian/dcnet-ap/etc/ppp/options.psmash
 	mkdir -p debian/dcnet-ap/etc/dcnet
 	cp accesspoints dnsmasq-ethtap.conf debian/dcnet-ap/etc/dcnet/
 	mkdir -p debian/dcnet-ap/usr/lib/systemd/system/
 	cp pppd.socket pppd@.service ethtap.service discoping.service iptables-dcnet.service debian/dcnet-ap/usr/lib/systemd/system/
+	cp psmash-pppd.socket psmash-pppd@.service debian/dcnet-ap/usr/lib/systemd/system/
 	sed -i -e "s:/usr/local/sbin/:/usr/sbin/:g" \
 		-e "s:/usr/local/etc/:/etc/:g" debian/dcnet-ap/usr/lib/systemd/system/ethtap.service
 	sed -i -e "s:/usr/local/sbin/:/usr/sbin/:g" debian/dcnet-ap/usr/lib/systemd/system/discoping.service

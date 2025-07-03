@@ -47,6 +47,7 @@ if [ "$1" = "purge" ]; then
                 deb-systemd-helper purge 'discoping.service' >/dev/null || true
                 deb-systemd-helper unmask 'discoping.service' >/dev/null || true
                 deb-systemd-helper purge 'pppd.socket' >/dev/null || true
+                deb-systemd-helper purge 'psmash-pppd.socket' >/dev/null || true
                 deb-systemd-helper purge 'iptables-dcnet.service' >/dev/null || true
                 deb-systemd-helper unmask 'iptables-dcnet.service' >/dev/null || true
         fi
