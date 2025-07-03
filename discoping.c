@@ -28,6 +28,7 @@
 #include <netdb.h>
 #include <ctype.h>
 #include <poll.h>
+#include <time.h>
 
 const uint32_t MAGIC = 0xDC15C001;
 #define PING 1
@@ -58,6 +59,15 @@ void error(const char *str)
   exit(1);
 }
 
+static const char *getDate()
+{
+	time_t now;
+	time(&now);
+	char *nowstr = ctime(&now);
+	nowstr[strlen(nowstr) - 1] = '\0';
+	return nowstr;
+}
+
 void pong(struct sockaddr_in *addr, const uint8_t *data, size_t len)
 {
 	uint8_t resp[13];
@@ -82,11 +92,11 @@ uint32_t resolve(const char *servname)
 	struct addrinfo *result;
 	int rc = getaddrinfo(servname, NULL, &hints, &result);
 	if (rc != 0) {
-		fprintf(stderr, "%s: DNS failure: %s\n", servname, gai_strerror(rc));
+		fprintf(stderr, "[%s] %s: DNS failure: %s\n", getDate(), servname, gai_strerror(rc));
 		return 0;
 	}
 	if (result == NULL) {
-		fprintf(stderr, "%s: DNS failure: no record found\n", servname);
+		fprintf(stderr, "[%s] %s: DNS failure: no record found\n", getDate(), servname);
 		return 0;
 	}
 	char ip[INET_ADDRSTRLEN];
@@ -238,7 +248,7 @@ int pingAccessPoints(int sockfd, int force)
 			if (ap->pingCount == 5)
 			{
 				if (ap->offline == 0)
-					fprintf(stderr, "Access point \"%s\" is offline\n", ap->name);
+					fprintf(stderr, "[%s] Access point \"%s\" is offline\n", getDate(), ap->name);
 				ap->offline = 1;
 				continue;
 			}
@@ -276,7 +286,7 @@ void apPong(struct sockaddr_in *addr, const uint8_t *data, size_t len)
 		ap->lastPing = 0;
 		ap->pingCount = 0;
 		if (ap->offline == 1)
-			fprintf(stderr, "Access point \"%s\" is back online\n", ap->name);
+			fprintf(stderr, "[%s] Access point \"%s\" is back online\n", getDate(), ap->name);
 		ap->offline = 0;
 		return;
 	}
@@ -303,7 +313,7 @@ int main(int argc, char *argv[])
 	    if (argc > 2)
 	    	accessPointsFile = argv[2];
 	}
-    printf("Started discoping on port %d with list %s\n", port, accessPointsFile);
+    printf("[%s] Started discoping on port %d with list %s\n", getDate(), port, accessPointsFile);
     refresh();
 	sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	if (sockfd < 0)

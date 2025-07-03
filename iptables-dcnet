@@ -38,14 +38,10 @@ if ! iptables -t nat -F DCNET_PRERT 2>/dev/null; then
 fi
 # Internet Game Pack
 iptables -t nat -A DCNET_PRERT -d 204.210.43.239/32 -p tcp -j DNAT --to-destination 172.20.0.1
-# Daytona USA (JP), Golf Shiyou Yo 2
-iptables -t nat -A DCNET_PRERT -d 203.179.41.127/32 -p tcp -j DNAT --to-destination 172.20.0.1
-# Sega Tetris
-iptables -t nat -A DCNET_PRERT -d 203.179.41.98/32 -p tcp -j DNAT --to-destination 172.20.0.1
-# Aero Dancing
-iptables -t nat -A DCNET_PRERT -d 203.179.41.170/32 -p tcp -j DNAT --to-destination 172.20.0.1
-# Hundred Swords
-iptables -t nat -A DCNET_PRERT -d 203.179.41.126/32 -p tcp -j DNAT --to-destination 172.20.0.1
+# IWANGO games
+iptables -t nat -A DCNET_PRERT -d 203.179.41.0/24 -p tcp -j DNAT --to-destination 172.20.0.1
+# Power Smash
+iptables -t nat -A DCNET_PRERT -d 172.17.18.2/32 -p tcp -j DNAT --to-destination 172.20.0.1
 # Toy Racer (BBA)
 iptables -t nat -A DCNET_PRERT -d 24.233.108.248/32 -j DNAT --to-destination 172.20.0.1
 # redirect dcnet.flyca.st external IP to internal for dcnet users

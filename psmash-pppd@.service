@@ -1,0 +1,6 @@
+[Unit]
+Description=DCNet Power Smash pppd server
+
+[Service]
+ExecStart=-/usr/sbin/pppd file /etc/ppp/options.psmash
+StandardInput=socket

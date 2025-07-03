@@ -1,0 +1,10 @@
+[Unit]
+Description=pppd socket for DCNet Power Smash
+
+[Socket]
+ListenStream=7656
+Accept=yes
+
+[Install]
+WantedBy=sockets.target
+

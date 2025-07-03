@@ -45,6 +45,7 @@ clean:
 
 createservice:
 	cp pppd.socket pppd@.service ethtap.service discoping.service iptables-dcnet.service /usr/lib/systemd/system/
+	cp psmash-pppd.socket psmash-pppd@.service /usr/lib/systemd/system/
 	sed -i -e "s:/usr/local/sbin/:$(sbindir)/:g" /usr/lib/systemd/system/discoping.service
 	sed -i -e "s:/usr/local/sbin/:$(sbindir)/:g" /usr/lib/systemd/system/ethtap.service
 	sed -i -e "s:/usr/local/sbin/:$(sbindir)/:g" /usr/lib/systemd/system/iptables-dcnet.service
@@ -56,8 +57,10 @@ createservice:
 	systemctl restart discoping.service
 	systemctl enable iptables-dcnet.service
 	systemctl restart iptables-dcnet.service
+	systemctl enable psmash-pppd.socket
+	systemctl restart psmash-pppd.socket
 
 archive:
 	tar cvzf dcnet-ap.tar.gz Makefile ppp-ipaddr.c ethtap.cpp discoping.c dcnetbba.cpp \
 		pppd.socket pppd@.service ethtap.service dnsmasq-ethtap.conf options.dcnet discoping.service \
-		accesspoints iptables-dcnet.service iptables-dcnet
+		accesspoints iptables-dcnet.service iptables-dcnet psmash-pppd.socket psmash-pppd@.service options.psmash
