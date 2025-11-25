@@ -44,6 +44,8 @@ iptables -t nat -A DCNET_PRERT -d 203.179.41.0/24 -p tcp -j DNAT --to-destinatio
 iptables -t nat -A DCNET_PRERT -d 172.17.18.2/32 -p tcp -j DNAT --to-destination 172.20.0.1
 # Toy Racer (BBA)
 iptables -t nat -A DCNET_PRERT -d 24.233.108.248/32 -j DNAT --to-destination 172.20.0.1
+# Alien Front Online
+iptables -t nat -A DCNET_PRERT -d 63.251.242.131/32 -j DNAT --to-destination 172.20.0.1
 # redirect dcnet.flyca.st external IP to internal for dcnet users
 iptables -t nat -A DCNET_PRERT -d ${dcnet}/32 -j DNAT --to-destination 172.20.0.1
 # redirect dcnet-eu.flyca.st external IP to internal for dcnet users

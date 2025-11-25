@@ -202,6 +202,7 @@ void refresh()
 		}
 		apCount++;
 	}
+	fclose(f);
 }
 
 void disco(struct sockaddr_in *addr, const uint8_t *data, size_t len)
