@@ -1,3 +1,9 @@
+dcnet-ap (1.5-1) unstable; urgency=low
+
+  * Alien Front Online DNAT
+
+ -- Flyinghead <flyinghead.github@gmail.com>  Thu, 25 Nov 2025 18:12:00 +0100
+
 dcnet-ap (1.4-1) unstable; urgency=low
 
   * Power Smash pppd server
