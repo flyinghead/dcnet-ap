@@ -42,6 +42,8 @@ iptables -t nat -A DCNET_PRERT -d 204.210.43.239/32 -p tcp -j DNAT --to-destinat
 iptables -t nat -A DCNET_PRERT -d 203.179.41.0/24 -p tcp -j DNAT --to-destination 172.20.0.1
 # Power Smash
 iptables -t nat -A DCNET_PRERT -d 172.17.18.2/32 -p tcp -j DNAT --to-destination 172.20.0.1
+# Pro Yakyuu Team de Asobou Net
+iptables -t nat -A DCNET_PRERT -d 172.17.24.2/32 -p tcp -j DNAT --to-destination 172.20.0.1
 # Toy Racer (BBA)
 iptables -t nat -A DCNET_PRERT -d 24.233.108.248/32 -j DNAT --to-destination 172.20.0.1
 # Alien Front Online
@@ -51,8 +53,8 @@ iptables -t nat -A DCNET_PRERT -d ${dcnet}/32 -j DNAT --to-destination 172.20.0.
 # redirect dcnet-eu.flyca.st external IP to internal for dcnet users
 iptables -t nat -A DCNET_PRERT -d ${dcnet_eu}/32 -j DNAT --to-destination 172.20.2.1
 # shuouma server redirection for patched versions of
-# IWANGO games (9500), DeeDee planet (9100), IGP/visual concepts (11000, 12301, 15303)
-iptables -t nat -A DCNET_PRERT -d 146.185.135.179 -p tcp --match multiport --dports 9500,9100,11000,12301,15303 -j DNAT --to-destination 172.20.0.1
+# IWANGO games (9500), IGP/visual concepts (11000, 12301, 15303)
+iptables -t nat -A DCNET_PRERT -d 146.185.135.179 -p tcp --match multiport --dports 9500,11000,12301,15303 -j DNAT --to-destination 172.20.0.1
 
 iptables -t nat -D POSTROUTING -s 172.20.0.0/16 -o $ETH_IF -j MASQUERADE 2>/dev/null || true
 iptables -t nat -A POSTROUTING -s 172.20.0.0/16 -o $ETH_IF -j MASQUERADE
