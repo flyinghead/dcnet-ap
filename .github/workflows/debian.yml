@@ -33,7 +33,7 @@ jobs:
           gbp buildpackage -us -uc -nc --git-ignore-branch
           mv ../dcnet-ap*.deb .
           rm dcnet-ap-dbgsym*.deb
-          mv dcnet-ap*.deb `basename dcnet-ap*.deb .deb`_${{ matrix.config.distrib }}.deb] 
+          mv dcnet-ap*.deb `basename dcnet-ap*.deb .deb`_${{ matrix.config.distrib }}.deb
       - uses: actions/upload-artifact@v4
         with:
           name: dcnet-ap-${{ matrix.config.distrib }}
