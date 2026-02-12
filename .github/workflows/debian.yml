@@ -8,9 +8,16 @@ on:
 
 jobs:
   build:
+    name: ${{ matrix.config.name }}
     runs-on: ubuntu-latest
     container:
-      image: debian:bullseye
+      image: ${{ matrix.config.container }}
+
+  strategy:
+    matrix:
+      config:
+        - {name: debian-11-bullseye, container: 'debian:bullseye', distrib: bullseye}
+        - {name: debian-12-bookworm, container: 'debian:bookworm', distrib: bookworm}
 
     steps:
       - run: apt-get -qy update && apt-get -qy install build-essential debhelper git-buildpackage ppp-dev
@@ -22,11 +29,14 @@ jobs:
       - name: Mark git repository as safe
         run: git config --global --add safe.directory $PWD
 
-      - run: gbp buildpackage -us -uc -nc --git-ignore-branch
-      - run: mv ../*.deb .
+      - run: |
+          gbp buildpackage -us -uc -nc --git-ignore-branch
+          mv ../dcnet-ap*.deb .
+          rm dcnet-ap-dbgsym*.deb
+          mv dcnet-ap*.deb `basename dcnet-ap*.deb .deb`_${{ matrix.config.distrib }}.deb] 
       - uses: actions/upload-artifact@v4
         with:
-          name: dcnet-ap-debian
+          name: dcnet-ap-${{ matrix.config.distrib }}
           path: "*.deb"
       - run: echo GIT_TAG=`git describe --tags --abbrev=0` >> $GITHUB_ENV
       - uses: softprops/action-gh-release@v2
