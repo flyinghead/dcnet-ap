@@ -20,7 +20,7 @@ jobs:
           - {name: debian-12-bookworm, container: 'debian:bookworm', distrib: bookworm}
 
     steps:
-      - run: apt-get -qy update && apt-get -qy install build-essential debhelper git-buildpackage ppp-dev
+      - run: apt-get -qy update && DEBIAN_FRONTEND=noninteractive apt-get -qy install build-essential debhelper git-buildpackage ppp-dev
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
