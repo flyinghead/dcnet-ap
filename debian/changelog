@@ -1,3 +1,9 @@
+dcnet-ap (1.7-1) unstable; urgency=low
+
+  * Enable IP forwarding
+
+ -- Flyinghead <flyinghead.github@gmail.com>  Thu, 14 Feb 2026 21:27:17 +0100
+
 dcnet-ap (1.6-1) unstable; urgency=low
 
   * Pro Ykyuu Team DNAT

@@ -37,7 +37,8 @@ override_dh_auto_install:
 		-e "s:/usr/local/etc/:/etc/:g" debian/dcnet-ap/usr/lib/systemd/system/ethtap.service
 	sed -i -e "s:/usr/local/sbin/:/usr/sbin/:g" debian/dcnet-ap/usr/lib/systemd/system/discoping.service
 	sed -i -e "s:/usr/local/sbin/:/usr/sbin/:g" debian/dcnet-ap/usr/lib/systemd/system/iptables-dcnet.service
-
+	mkdir -p debian/dcnet-ap/etc/sysctl.d
+	cp 50-dcnet.conf debian/dcnet-ap/etc/sysctl.d/
 
 # to test auto deployment of systemd unit files
 #dh_installsystemd
