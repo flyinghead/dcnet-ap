@@ -33,22 +33,32 @@
 #include <time.h>
 #include <arpa/inet.h>
 
+#ifdef PPP_24
 #undef bool
 #define bool pppbool
 #include <pppd/pppd.h>
-#include <pppd/chap-new.h>
-#include <pppd/upap.h>
+#define ppp_peer_authname(...) peer_authname
+#define ppp_add_options add_options
+#define ppp_add_notify add_notifier
+#define NF_EXIT &exitnotify
+#define ppp_ifname() ifname
+#undef bool
+#define PPPD_VERSION VERSION
+#else
+#include <pppd/pppd.h>
 #include <pppd/fsm.h>
 #include <pppd/ipcp.h>
-#undef bool
+#include <pppd/options.h>
+typedef struct option option_t;
+#endif
 
-char pppd_version[] = VERSION;
+char pppd_version[] = PPPD_VERSION;
 static const char *start_ip;
 static option_t options[] = {
 	{ "startip", o_string, &start_ip, "Starting IP address assigned to ppp0" },
 	{ NULL }
 };
-static char *peerName = "?";
+static const char *peerName = "?";
 
 static const char *getDate()
 {
@@ -82,18 +92,19 @@ static const char *getRemoteIp()
 static void assignIp(u_int32_t *addrp)
 {
 	// peer user name
-	peerName = peer_authname;
+	peerName = ppp_peer_authname(NULL, 0);
 
-	if (strncmp(ifname, "ppp", 3) != 0) {
+	const char *name = ppp_ifname();
+	if (strncmp(name, "ppp", 3) != 0) {
 		error("[%s] %s user %s - ifname invalid: %s",
-				getDate(), getRemoteIp(), peerName, ifname);
+				getDate(), getRemoteIp(), peerName, name);
 		*addrp = 0;
 		return;
 	}
-	unsigned i = (unsigned)atoi(&ifname[3]);
+	unsigned i = (unsigned)atoi(&name[3]);
 	if (i < 0 || i > 255) {
 		error("[%s] %s user %s - too many connections: %s",
-				getDate(), getRemoteIp(), peerName, ifname);
+				getDate(), getRemoteIp(), peerName, name);
 		*addrp = 0;
 		return;
 	}
@@ -108,21 +119,21 @@ static void assignIp(u_int32_t *addrp)
 
 	char *ipstr = inet_ntoa(inaddr);
 	info("[%s] %s: Connection from %s user %s assigned IP %s",
-			getDate(), ifname, getRemoteIp(), peerName, ipstr);
+			getDate(), name, getRemoteIp(), peerName, ipstr);
 }
 
 static void pppExit(void *arg, int i)
 {
 	info("[%s] %s: Disconnection from %s user %s",
-			getDate(), ifname, getRemoteIp(), peerName);
+			getDate(), ppp_ifname(), getRemoteIp(), peerName);
 }
 
 void
 plugin_init(void)
 {
 	info("DCNet IP address plugin");
-	add_options(options);
+	ppp_add_options(options);
 	ip_choose_hook = &assignIp;
-	add_notifier(&exitnotify, pppExit, NULL);
+	ppp_add_notify(NF_EXIT, pppExit, NULL);
 }
 

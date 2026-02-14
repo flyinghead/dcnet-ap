@@ -1,5 +1,5 @@
 #
-# dependencies: ppp ppp-dev
+# dependencies: ppp (runtime), ppp-dev (build)
 #
 prefix = /usr/local
 exec_prefix = $(prefix)
@@ -8,20 +8,25 @@ libdir = $(exec_prefix)/lib
 
 CFLAGS=-O3 -g -fPIC -Wall -Wconversion
 CXXFLAGS=-O3 -g -Wall
-DEPS=
+DEPS=Makefile
+
+PPP_VER=$(shell echo '#include <pppd/pppdconf.h>' | cc -E $(CFLAGS) - >/dev/null 2>&1 && echo '2.5.2' || echo '2.4.9')
+ifeq ("$(PPP_VER)", "2.4.9")
+CFLAGS+=-DPPP_24
+endif
 
 all: ppp-ipaddr.so ethtap discoping
 
-ppp-ipaddr.so: ppp-ipaddr.o
+ppp-ipaddr.so: ppp-ipaddr.o $(DEPS)
 	$(CC) -shared -o $@ $<
 
-ethtap: ethtap.o
+ethtap: ethtap.o $(DEPS)
 	$(CXX) $(CXXFLAGS) -o $@ $<
 
-discoping: discoping.o
+discoping: discoping.o $(DEPS)
 	$(CC) $(CFLAGS) -o $@ $<
 
-dcnetbba: dcnetbba.o
+dcnetbba: dcnetbba.o $(DEPS)
 	$(CXX) $(CXXFLAGS) -o $@ $<
 
 %.o: %.c $(DEPS)
@@ -31,9 +36,8 @@ dcnetbba: dcnetbba.o
 	$(CXX) -c -o $@ $< $(CXXFLAGS)
 
 install: all
-	PPP_VER=2.4.9 ; \
-	mkdir -p $(DESTDIR)/usr/lib/pppd/$$PPP_VER && \
-	install -m 0644 ppp-ipaddr.so $(DESTDIR)/usr/lib/pppd/$$PPP_VER
+	mkdir -p $(DESTDIR)/usr/lib/pppd/$(PPP_VER) && \
+	install -m 0644 ppp-ipaddr.so $(DESTDIR)/usr/lib/pppd/$(PPP_VER)
 	mkdir -p $(DESTDIR)$(sbindir)
 	install ethtap $(DESTDIR)$(sbindir)
 	install discoping $(DESTDIR)$(sbindir)
