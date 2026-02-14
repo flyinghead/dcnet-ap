@@ -16,8 +16,6 @@ jobs:
     strategy:
       matrix:
         config:
-          - {name: debian-11-bullseye, container: 'debian:bullseye', distrib: bullseye}
-          - {name: debian-12-bookworm, container: 'debian:bookworm', distrib: bookworm}
           - {name: debian-13-trixie, container: 'debian:trixie', distrib: trixie}
 
     steps:
