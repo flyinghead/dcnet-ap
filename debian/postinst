@@ -99,7 +99,7 @@ fi
 # End copy
 
 if [ "$1" = "configure" ] ; then
-        sysctl -p
+        systemctl restart systemd-sysctl
 fi
 
 # dh_installdeb will replace this with shell code automatically
