@@ -7,6 +7,6 @@ Standards-Version: 4.4.1
 
 Package: dcnet-ap
 Architecture: amd64
-Depends: ${shlibs:Depends}, ${misc:Depends}, ppp (>= 2.5.2), iptables (>= 1.8.2)
+Depends: ${shlibs:Depends}, ${misc:Depends}, ppp (>= 2.5.2), iptables (>= 1.8.2), dnsmasq (>= 2.85)
 Description: Daemons for DCNet access points
  Daemons for ppp and tap remote access.

@@ -1,3 +1,9 @@
+dcnet-ap (1.7-2) unstable; urgency=low
+
+  * Missing dependency on dnsmasq
+
+ -- Flyinghead <flyinghead.github@gmail.com>  Thu, 15 Feb 2026 10:25:54 +0100
+
 dcnet-ap (1.7-1) unstable; urgency=low
 
   * Enable IP forwarding
