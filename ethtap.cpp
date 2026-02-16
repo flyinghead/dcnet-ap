@@ -401,13 +401,21 @@ int main(int argc, char *argv[])
 		}
 	}
 
+#ifdef IPV4_ONLY
 	int ssock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	int option = 1;
-	setsockopt(ssock, SOL_SOCKET, SO_REUSEADDR, (const char *)&option, sizeof(option));
 	sockaddr_in serveraddr{};
 	serveraddr.sin_family = AF_INET;
 	serveraddr.sin_addr.s_addr = INADDR_ANY;
 	serveraddr.sin_port = htons(7655);
+#else
+	int ssock = socket(AF_INET6, SOCK_STREAM, 0);
+	// allow IPv4 too
+	const int v6only = 0;
+	setsockopt(ssock, IPPROTO_IPV6, IPV6_V6ONLY, (const char *)&v6only, sizeof(v6only));
+	sockaddr_in6 serveraddr = { AF_INET6, htons(7655), 0, in6addr_any, 0 };
+#endif
+	const int reuseAddr = 1;
+	setsockopt(ssock, SOL_SOCKET, SO_REUSEADDR, (const char *)&reuseAddr, sizeof(reuseAddr));
 
 	if (::bind(ssock, (sockaddr *)&serveraddr, sizeof(serveraddr)) < 0) {
 		close(ssock);
@@ -416,14 +424,24 @@ int main(int argc, char *argv[])
 	listen(ssock, 5);
 	for (;;)
 	{
+#ifdef IPV4_ONLY
 		sockaddr_in src_addr{};
+#else
+		sockaddr_in6 src_addr{};
+#endif
 		socklen_t addr_len = sizeof(src_addr);
 		int sock = accept(ssock, (sockaddr *)&src_addr, &addr_len);
 		if (sock < 0) {
 			perror("accept");
 			break;
 		}
+#ifdef IPV4_ONLY
 		remoteEndpoint = inet_ntoa(src_addr.sin_addr) + std::string(":") + std::to_string(ntohs(src_addr.sin_port));
+#else
+		char hostname[255];
+		inet_ntop(AF_INET, &src_addr.sin6_addr, hostname, sizeof(hostname));
+		remoteEndpoint = hostname + std::string(":") + std::to_string(ntohs(src_addr.sin6_port));
+#endif
 		if (fork() == 0) {
 			close(ssock);
 			handleConnection(sock);
