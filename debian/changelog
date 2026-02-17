@@ -1,6 +1,12 @@
+dcnet-ap (1.9-1) unstable; urgency=low
+
+  * Fixed ipv6 support for ethtap
+
+ -- Flyinghead <flyinghead.github@gmail.com>  Tue, 17 Feb 2026 10:34:37 +0100
+
 dcnet-ap (1.8-1) unstable; urgency=low
 
-  * ipv6 support for ethtab
+  * ipv6 support for ethtap
 
  -- Flyinghead <flyinghead.github@gmail.com>  Mon, 16 Feb 2026 22:36:57 +0100
 
