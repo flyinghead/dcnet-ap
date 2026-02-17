@@ -190,24 +190,24 @@ void handleConnection(int sock)
 	sockaddr_in *ifaddr = (sockaddr_in *)&ifr.ifr_addr;
 	ifaddr->sin_family = AF_INET;
 	inet_pton(AF_INET, ipaddr.c_str(), &ifaddr->sin_addr);
-	// Note that we use the client socket file descriptor, instead of the tap one, for these ioctls
-	// because they must be done on a socket. The target interface name is set in ifr_name and doesn't
-	// affect the socket at all.
-	if (ioctl(sock, SIOCSIFADDR, &ifr))
+	// Create a dummy IPv4 socket because these ioctls must be done on a socket.
+	int dummy = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	if (ioctl(dummy, SIOCSIFADDR, &ifr))
 		error(-1, errno, "ioctl(SIOCSIFADDR)");
 
 	// Set network mask
 	ifaddr = (sockaddr_in *)&ifr.ifr_netmask;
 	ifaddr->sin_family = AF_INET;
 	inet_pton(AF_INET, "255.255.255.254", &ifaddr->sin_addr);
-	if (ioctl(sock, SIOCSIFNETMASK, &ifr))
+	if (ioctl(dummy, SIOCSIFNETMASK, &ifr))
 		error(-1, errno, "ioctl(SIOCSIFNETMASK)");
 
 	// Set interface up
-	ioctl(sock, SIOCGIFFLAGS, &ifr);
+	ioctl(dummy, SIOCGIFFLAGS, &ifr);
 	ifr.ifr_flags |= (IFF_UP | IFF_RUNNING);
-	if (ioctl(sock, SIOCSIFFLAGS, &ifr))
+	if (ioctl(dummy, SIOCSIFFLAGS, &ifr))
 		error(-1, errno, "ioctl(SIOCSIFFLAGS)");
+	close(dummy);
 
 	ipaddr[ipaddr.length() - 1] += 1;
 	startDnsmasq(ifname, ipaddr);
@@ -424,11 +424,7 @@ int main(int argc, char *argv[])
 	listen(ssock, 5);
 	for (;;)
 	{
-#ifdef IPV4_ONLY
-		sockaddr_in src_addr{};
-#else
-		sockaddr_in6 src_addr{};
-#endif
+		sockaddr_storage src_addr;
 		socklen_t addr_len = sizeof(src_addr);
 		int sock = accept(ssock, (sockaddr *)&src_addr, &addr_len);
 		if (sock < 0) {
@@ -436,11 +432,23 @@ int main(int argc, char *argv[])
 			break;
 		}
 #ifdef IPV4_ONLY
-		remoteEndpoint = inet_ntoa(src_addr.sin_addr) + std::string(":") + std::to_string(ntohs(src_addr.sin_port));
+		sockaddr_in *ipv4addr = (sockaddr_in *)&src_addr;
+		remoteEndpoint = inet_ntoa(ipv4addr->sin_addr) + std::string(":") + std::to_string(ntohs(ipv4addr->sin_port));
 #else
 		char hostname[255];
-		inet_ntop(AF_INET, &src_addr.sin6_addr, hostname, sizeof(hostname));
-		remoteEndpoint = hostname + std::string(":") + std::to_string(ntohs(src_addr.sin6_port));
+		int port;
+		if (src_addr.ss_family == AF_INET) {
+			inet_ntop(AF_INET, &((sockaddr_in *)&src_addr)->sin_addr, hostname, sizeof(hostname));
+			port = ((sockaddr_in *)&src_addr)->sin_port;
+		}
+		else {
+			inet_ntop(AF_INET6, &((sockaddr_in6 *)&src_addr)->sin6_addr, hostname, sizeof(hostname));
+			if (!strncmp(hostname, "::ffff:", 7))
+				// Get rid of the IPv6 prefix for IPv4-mapped addresses
+				memmove(hostname, hostname + 7, strlen(hostname) + 1 - 7);
+			port = ((sockaddr_in6 *)&src_addr)->sin6_port;
+		}
+		remoteEndpoint = hostname + std::string(":") + std::to_string(ntohs(port));
 #endif
 		if (fork() == 0) {
 			close(ssock);
