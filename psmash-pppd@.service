@@ -2,5 +2,8 @@
 Description=DCNet Power Smash pppd server
 
 [Service]
-ExecStart=-/usr/sbin/pppd file /etc/ppp/options.psmash
+Environment=AP_DCNET_ADDR=172.20.0.1
+Environment=PPP_START_ADDR=172.20.0.10
+EnvironmentFile=-/etc/default/dcnet-ap
+ExecStart=-/usr/sbin/pppd file /etc/ppp/options.psmash ${AP_DCNET_ADDR}: startip ${PPP_START_ADDR}
 StandardInput=socket

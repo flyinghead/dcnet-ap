@@ -9,6 +9,7 @@ Restart=always
 RestartSec=1
 User=nobody
 Group=nogroup
+EnvironmentFile=-/etc/default/dcnet-ap
 ExecStart=/usr/local/sbin/discoping
 StandardOutput=append:/var/log/dcnet/discoping.log
 
