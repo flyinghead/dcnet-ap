@@ -20,18 +20,9 @@ set -e
 # If the package has default file it could be sourced, so that
 # the local admin can overwrite the defaults
 [ -f "/etc/default/dcnet-ap" ] && . /etc/default/dcnet-ap
-# Defaults
-[ -z "$AP_DCNET_ADDR" ] && AP_DCNET_ADDR=172.20.0.1
-[ -z "$PPP_START_ADDR" ] && PPP_START_ADDR=172.20.0.10
-[ -z "$TAP_START_ADDR" ] && TAP_START_ADDR=172.20.0.20
 
 case "$1" in
     configure)
-	sed -i -e "s/172\\.20\\.0\\.1:/$AP_DCNET_ADDR:/g" \
-		-e "s/172\\.20\\.0\\.10/$PPP_START_ADDR/g" /etc/ppp/options.dcnet
-	sed -i -e "s/172\\.20\\.0\\.1:/$AP_DCNET_ADDR:/g" \
-		-e "s/172\\.20\\.0\\.10/$PPP_START_ADDR/g" /etc/ppp/options.psmash
-	sed -i -e "s/172\\.20\\.1\\.0/$TAP_START_ADDR/g" /usr/lib/systemd/system/ethtap.service
 	mkdir -p /var/log/dcnet
     ;;
 

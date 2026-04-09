@@ -19,7 +19,7 @@ jobs:
           - {name: debian-13-trixie, container: 'debian:trixie', distrib: trixie}
 
     steps:
-      - run: apt-get -qy update && DEBIAN_FRONTEND=noninteractive apt-get -qy install build-essential debhelper git-buildpackage ppp-dev
+      - run: apt-get -qy update && DEBIAN_FRONTEND=noninteractive apt-get -qy install build-essential debhelper git-buildpackage ppp-dev libcurl4-openssl-dev
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
