@@ -7,7 +7,9 @@ StartLimitIntervalSec=0
 Type=simple
 Restart=always
 RestartSec=1
-ExecStart=/usr/local/sbin/ethtap -i 172.20.1.0 -d /usr/local/etc/dcnet/dnsmasq-ethtap.conf
+Environment=TAP_START_ADDR=172.20.1.0
+EnvironmentFile=-/etc/default/dcnet-ap
+ExecStart=/usr/local/sbin/ethtap -i ${TAP_START_ADDR} -d /usr/local/etc/dcnet/dnsmasq-ethtap.conf
 StandardOutput=append:/var/log/dcnet/ethtap.log
 
 [Install]
