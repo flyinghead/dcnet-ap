@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+#include "notify.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <cerrno>
@@ -41,9 +42,11 @@ constexpr int MAX_CONNECTIONS = 64;
 constexpr time_t READ_TIMEOUT = 35 * 60;
 
 int child_pipe = -1;
-std::string remoteEndpoint;
+std::string remoteIp;
+int remotePort;
 const char *dnsmasq_conf = "dnsmasq.conf";
 const char *start_ip = "172.20.1.0";
+std::string dcnetIp;
 
 bool setNonBlocking(int fd)
 {
@@ -152,13 +155,14 @@ static const char *getDate()
 }
 
 static void logend() {
-	printf("[%s] Link to %s closed\n", getDate(), remoteEndpoint.c_str());
+	dcnetDisconnect(dcnetIp.c_str());
+	fprintf(stderr, "[%s] Link to %s:%d closed\n", getDate(), remoteIp.c_str(), remotePort);
 }
 
 void handleConnection(int sock)
 {
 	handleProlog(sock);
-	printf("[%s] Connection from %s\n", getDate(), remoteEndpoint.c_str());
+	fprintf(stderr, "[%s] Connection from %s:%d\n", getDate(), remoteIp.c_str(), remotePort);
 
 	int tap_fd = open("/dev/net/tun", O_RDWR | O_CLOEXEC);
 	if (tap_fd < 0)
@@ -186,7 +190,7 @@ void handleConnection(int sock)
 	inaddr.s_addr = htonl(ntohl(inaddr.s_addr) + ifnum * 2);
 
 	std::string ipaddr = inet_ntoa(inaddr);
-	printf("%s: interface %s - IP address %s\n", remoteEndpoint.c_str(), ifname.c_str(), ipaddr.c_str());
+	fprintf(stderr, "%s:%d: interface %s - IP address %s\n", remoteIp.c_str(), remotePort, ifname.c_str(), ipaddr.c_str());
 	sockaddr_in *ifaddr = (sockaddr_in *)&ifr.ifr_addr;
 	ifaddr->sin_family = AF_INET;
 	inet_pton(AF_INET, ipaddr.c_str(), &ifaddr->sin_addr);
@@ -226,6 +230,9 @@ void handleConnection(int sock)
 	if (setuid(uid))
 		error(-1, errno, "setuid");
 	atexit(logend);
+	// Notify the new login
+	dcnetIp = ipaddr;
+	dcnetConnect(nullptr, remoteIp.c_str(), remotePort, dcnetIp.c_str());
 
 	setNonBlocking(tap_fd);
 	setNonBlocking(sock);
@@ -433,7 +440,8 @@ int main(int argc, char *argv[])
 		}
 #ifdef IPV4_ONLY
 		sockaddr_in *ipv4addr = (sockaddr_in *)&src_addr;
-		remoteEndpoint = inet_ntoa(ipv4addr->sin_addr) + std::string(":") + std::to_string(ntohs(ipv4addr->sin_port));
+		remoteIp = inet_ntoa(ipv4addr->sin_addr);
+		remotePort = ntohs(ipv4addr->sin_port);
 #else
 		char hostname[255];
 		int port;
@@ -448,7 +456,8 @@ int main(int argc, char *argv[])
 				memmove(hostname, hostname + 7, strlen(hostname) + 1 - 7);
 			port = ((sockaddr_in6 *)&src_addr)->sin6_port;
 		}
-		remoteEndpoint = hostname + std::string(":") + std::to_string(ntohs(port));
+		remoteIp = hostname;
+		remotePort = ntohs(port);
 #endif
 		if (fork() == 0) {
 			close(ssock);

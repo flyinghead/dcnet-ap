@@ -1,5 +1,12 @@
 #
-# dependencies: ppp (runtime), ppp-dev (build)
+# dependencies:
+#   runtime:
+#     ppp
+#	  libcurl4 (>= 7.16.2) (debian 11/bullseye, debian 12/bookworm)
+#	  libcurl4t64 (>= 7.16.2) (debian 13/trixie) 
+#   build:
+#     ppp-dev
+#	  libcurl4-openssl-dev | libcurl4-dev
 #
 prefix = /usr/local
 exec_prefix = $(prefix)
@@ -7,8 +14,8 @@ sbindir = $(exec_prefix)/sbin
 libdir = $(exec_prefix)/lib
 
 CFLAGS=-O3 -g -fPIC -Wall -Wconversion
-CXXFLAGS=-O3 -g -Wall
-DEPS=Makefile
+CXXFLAGS=-O3 -g -fPIC -Wall
+DEPS=Makefile json.hpp notify.h
 
 PPP_VER=$(shell echo '#include <pppd/pppdconf.h>' | cc -E $(CFLAGS) - >/dev/null 2>&1 && echo '2.5.2' || echo '2.4.9')
 ifeq ("$(PPP_VER)", "2.4.9")
@@ -17,11 +24,11 @@ endif
 
 all: ppp-ipaddr.so ethtap discoping
 
-ppp-ipaddr.so: ppp-ipaddr.o $(DEPS)
-	$(CC) -shared -o $@ $<
+ppp-ipaddr.so: ppp-ipaddr.o notify.o $(DEPS)
+	$(CXX) -shared -o $@ $< notify.o -lcurl
 
-ethtap: ethtap.o $(DEPS)
-	$(CXX) $(CXXFLAGS) -o $@ $<
+ethtap: ethtap.o notify.o $(DEPS)
+	$(CXX) $(CXXFLAGS) -o $@ $< notify.o -lcurl
 
 discoping: discoping.o $(DEPS)
 	$(CC) $(CFLAGS) -o $@ $<

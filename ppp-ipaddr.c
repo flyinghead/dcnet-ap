@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
+#include "notify.h"
 #include <syslog.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -59,6 +60,7 @@ static option_t options[] = {
 	{ NULL }
 };
 static const char *peerName = "?";
+static char dcnetIp[32];
 
 static const char *getDate()
 {
@@ -71,22 +73,26 @@ static const char *getDate()
 
 static const char *getRemoteIp()
 {
-	static char peerAddr[32] = "?";
-	if (peerAddr[0] == '?')
+	static char peerAddr[32];
+	if (peerAddr[0] == '\0')
 	{
 		// peer address
 		char *env = getenv("REMOTE_ADDR");
 		if (env != NULL)
-		{
 			strcpy(peerAddr, env);
-			env = getenv("REMOTE_PORT");
-			if (env != NULL) {
-				strcat(peerAddr, ":");
-				strcat(peerAddr, env);
-			}
-		}
+		else
+			strcpy(peerAddr, "0.0.0.0");
 	}
 	return peerAddr;
+}
+
+static int getRemotePort()
+{
+	const char *env = getenv("REMOTE_PORT");
+	if (env != NULL)
+		return atoi(env);
+	else
+		return 0;
 }
 
 static void assignIp(u_int32_t *addrp)
@@ -96,15 +102,15 @@ static void assignIp(u_int32_t *addrp)
 
 	const char *name = ppp_ifname();
 	if (strncmp(name, "ppp", 3) != 0) {
-		error("[%s] %s user %s - ifname invalid: %s",
-				getDate(), getRemoteIp(), peerName, name);
+		error("[%s] %s:%d user %s - ifname invalid: %s",
+				getDate(), getRemoteIp(), getRemotePort(), peerName, name);
 		*addrp = 0;
 		return;
 	}
 	unsigned i = (unsigned)atoi(&name[3]);
 	if (i < 0 || i > 255) {
-		error("[%s] %s user %s - too many connections: %s",
-				getDate(), getRemoteIp(), peerName, name);
+		error("[%s] %s:%d user %s - too many connections: %s",
+				getDate(), getRemoteIp(), getRemotePort(), peerName, name);
 		*addrp = 0;
 		return;
 	}
@@ -118,14 +124,17 @@ static void assignIp(u_int32_t *addrp)
 	*addrp = inaddr.s_addr;
 
 	char *ipstr = inet_ntoa(inaddr);
-	info("[%s] %s: Connection from %s user %s assigned IP %s",
-			getDate(), name, getRemoteIp(), peerName, ipstr);
+	strcpy(dcnetIp, ipstr);
+	info("[%s] %s: Connection from %s:%d user %s assigned IP %s",
+			getDate(), name, getRemoteIp(), getRemotePort(), peerName, ipstr);
+	dcnetConnect(peerName, getRemoteIp(), getRemotePort(), ipstr);
 }
 
 static void pppExit(void *arg, int i)
 {
-	info("[%s] %s: Disconnection from %s user %s",
-			getDate(), ppp_ifname(), getRemoteIp(), peerName);
+	info("[%s] %s: Disconnection from %s:%d user %s",
+			getDate(), ppp_ifname(), getRemoteIp(), getRemotePort(), peerName);
+	dcnetDisconnect(dcnetIp);
 }
 
 void
