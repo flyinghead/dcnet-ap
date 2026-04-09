@@ -1,3 +1,10 @@
+dcnet-ap (2.0-1) unstable; urgency=low
+
+  * Log connect/disconnect to status server
+  * Use /etc/default at runtime, not install time
+
+ -- Flyinghead <flyinghead.github@gmail.com>  Thu, 9 Apr 2026 10:06:23 +0200
+
 dcnet-ap (1.9-1) unstable; urgency=low
 
   * Fixed ipv6 support for ethtap
